@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Open Graph мета-теги для статьи -->
+    <meta property="og:title" content="{{ tree.name }} — Разведение плодовых деревьев">
+    <meta property="og:description" content="{{ tree.short_desc }}">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/0F1A12/C9A87C?text={{ tree.name | replace(' ', '+') }}">
+    <meta property="og:type" content="article">
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ tree.name }} — Разведение плодовых деревьев">
+    <meta name="twitter:description" content="{{ tree.short_desc }}">
+    <title>{{ tree.name }} — Разведение плодовых деревьев</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- html2pdf.js для генерации PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header header--small">
+        <a href="{{ url_for('index') }}" class="back-link">← Назад к списку</a>
+        <h1 class="header__title">{{ tree.emoji }} {{ tree.name }}</h1>
+    </header>
+
+    <!-- Контент статьи (эта часть будет сохраняться в PDF) -->
+    <main class="container article-content" id="article-content">
+        <!-- Вводный текст -->
+        <section class="article-section">
+            <p class="article-text">{{ tree.article.intro }}</p>
+            <p class="article-text">{{ tree.article.details }}</p>
+        </section>
+
+        <!-- Заглушка изображения -->
+        <div class="image-placeholder">
+            <span>{{ tree.article.image_placeholder }}</span>
+        </div>
+
+        <!-- Шаги посадки -->
+        <section class="article-section">
+            <h2 class="section-title">Шаги посадки</h2>
+            <ul class="steps-list">
+                {% for step in tree.article.steps %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Уход -->
+        <section class="article-section">
+            <h2 class="section-title">Уход</h2>
+            <ul class="care-list">
+                {% for item in tree.article.care %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+
+    <!-- Кнопка сохранения в PDF -->
+    <div class="pdf-btn-wrapper">
+        <button class="pdf-btn" onclick="saveToPDF()">📄 Сохранить в PDF</button>
+    </div>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <p>© 2026 Разведение плодовых деревьев для новичков</p>
+    </footer>
+
+    <script>
+        // Функция сохранения статьи в PDF
+        function saveToPDF() {
+            const element = document.getElementById('article-content');
+            const treeName = '{{ tree.name }}'.replace(/[^\w\sА-Яа-яЁё]/g, '_');
+            
+            // Настройки для PDF
+            const opt = {
+                margin: 10, // поля по 1 см (10мм)
+                filename: treeName + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Генерируем и скачиваем PDF
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
