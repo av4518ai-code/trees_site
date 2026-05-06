@@ -1,0 +1,213 @@
+/* Основные стили для Театрального Генератора Постов */
+
+/* Тёмный фон страницы */
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Контейнер */
+.container {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: #b39ddb; /* Акцентный мягкий цвет */
+    margin-bottom: 30px;
+    font-weight: 300;
+    letter-spacing: 1px;
+}
+
+/* Карточка с формой */
+.card {
+    background-color: #1e1e2f;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+}
+
+/* Группы полей ввода */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #b39ddb;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.required {
+    color: #ff5252;
+}
+
+/* Поля ввода и селекты */
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a3a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #b39ddb;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Ошибки */
+.error-text {
+    color: #ff5252;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+    min-height: 15px;
+}
+
+/* Ряд для двух колонок (Жанр и Настроение) */
+.row {
+    display: flex;
+    gap: 20px;
+}
+
+.row .form-group {
+    flex: 1;
+}
+
+/* Кнопки */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background-color: #b39ddb;
+    color: #121212;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #ce93d8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(179, 157, 219, 0.4);
+}
+
+.btn-primary:disabled {
+    background-color: #888;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 2px solid #b39ddb;
+    color: #b39ddb;
+    margin-top: 20px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #b39ddb;
+    color: #121212;
+}
+
+.btn-secondary:disabled {
+    border-color: #555;
+    color: #555;
+    cursor: not-allowed;
+}
+
+/* Блок с результатом (Готовый пост) */
+.result-card {
+    background-color: #2a2a3a; /* Выделенный фон */
+    border: 1px solid #b39ddb;
+}
+
+.result-card h2 {
+    color: #b39ddb;
+    margin-top: 0;
+    font-weight: 300;
+}
+
+.post-content {
+    background-color: #1e1e2f;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 150px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    border: 1px solid #444;
+}
+
+/* Стилизация скроллбара для блока поста */
+.post-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.post-content::-webkit-scrollbar-track {
+    background: #1e1e2f;
+    border-radius: 4px;
+}
+
+.post-content::-webkit-scrollbar-thumb {
+    background: #b39ddb;
+    border-radius: 4px;
+}
+
+.placeholder-text {
+    color: #666;
+    text-align: center;
+    margin-top: 50px;
+    font-style: italic;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 600px) {
+    .row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    body {
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 15px;
+    }
+}

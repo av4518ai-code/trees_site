@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Театральный Генератор Постов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Генератор Театральных Постов</h1>
+        
+        <!-- Форма ввода данных -->
+        <div class="card">
+            <div class="form-group">
+                <label for="description">Описание мероприятия <span class="required">*</span></label>
+                <textarea id="description" placeholder="Введите описание: сюжет, актеры, особенности..." rows="4"></textarea>
+                <small id="desc-error" class="error-text"></small>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="genre">Жанр</label>
+                    <select id="genre">
+                        <option value="спектакль">Спектакль</option>
+                        <option value="концерт">Концерт</option>
+                        <option value="шоу">Шоу</option>
+                        <option value="кинофильм">Кинофильм</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mood">Настроение поста</label>
+                    <select id="mood">
+                        <option value="вдохновляющее">Вдохновляющее ✨</option>
+                        <option value="таинственное">Таинственное 🌙</option>
+                        <option value="дерзкое">Дерзкое 🔥</option>
+                        <option value="ностальгическое">Ностальгическое 📜</option>
+                        <option value="эпичное">Эпичное ⚔️</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Кнопка генерации -->
+            <button id="generate-btn" class="btn btn-primary" onclick="generatePost()">
+                Сформировать пост
+            </button>
+        </div>
+
+        <!-- Блок вывода результата -->
+        <div class="card result-card" id="result-card">
+            <h2>Готовый пост</h2>
+            <div class="post-content" id="post-content">
+                <p class="placeholder-text">Здесь появится ваш пост...</p>
+            </div>
+            
+            <!-- Кнопка сохранения в PDF -->
+            <button id="save-btn" class="btn btn-secondary" onclick="saveToPDF()" disabled>
+                Сохранить в PDF
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Текущий сгенерированный текст
+        let currentPostText = '';
+
+        /**
+         * Функция отправки запроса на генерацию поста
+         */
+        async function generatePost() {
+            const description = document.getElementById('description').value.trim();
+            const genre = document.getElementById('genre').value;
+            const mood = document.getElementById('mood').value;
+            const errorEl = document.getElementById('desc-error');
+            const btn = document.getElementById('generate-btn');
+
+            // Валидация: проверяем, что описание не пустое
+            if (!description) {
+                errorEl.textContent = 'Пожалуйста, заполните описание мероприятия';
+                return;
+            }
+            errorEl.textContent = '';
+
+            // Блокируем кнопку на время запроса
+            btn.disabled = true;
+            btn.textContent = 'Генерация...';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description, genre, mood })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentPostText = data.post;
+                    // Выводим текст (тег pre заменен на div с сохранением форматирования)
+                    const contentEl = document.getElementById('post-content');
+                    // Заменяем переносы строк на <br> для корректного отображения в div
+                    const formattedText = data.post.replace(/\n/g, '<br>');
+                    contentEl.innerHTML = formattedText;
+                    
+                    // Активируем кнопку сохранения
+                    document.getElementById('save-btn').disabled = false;
+                    
+                    // Анимация появления
+                    const card = document.getElementById('result-card');
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (err) {
+                alert('Ошибка сети: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Сформировать пост';
+            }
+        }
+
+        /**
+         * Функция сохранения поста в PDF
+         */
+        async function saveToPDF() {
+            if (!currentPostText) {
+                alert('Нет сгенерированного поста для сохранения');
+                return;
+            }
+
+            try {
+                const response = await fetch('/save_pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ post: currentPostText })
+                });
+
+                if (response.ok) {
+                    // Создаем ссылку для скачивания Blob-объекта
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'theater_post.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    alert('Пост сохранён в PDF!');
+                } else {
+                    const data = await response.json();
+                    alert('Ошибка: ' + (data.error || 'Не удалось создать PDF'));
+                }
+            } catch (err) {
+                alert('Ошибка при сохранении: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
