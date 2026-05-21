@@ -30,20 +30,20 @@
     <main class="container article-content" id="article-content">
         <!-- Вводный текст -->
         <section class="article-section">
-            <p class="article-text">{{ tree.article.intro }}</p>
-            <p class="article-text">{{ tree.article.details }}</p>
+            <p class="article-text">{{ article.intro }}</p>
+            <p class="article-text">{{ article.details }}</p>
         </section>
 
         <!-- Заглушка изображения -->
         <div class="image-placeholder">
-            <span>{{ tree.article.image_placeholder }}</span>
+            <span>{{ article.image_placeholder }}</span>
         </div>
 
         <!-- Шаги посадки -->
         <section class="article-section">
             <h2 class="section-title">Шаги посадки</h2>
             <ul class="steps-list">
-                {% for step in tree.article.steps %}
+                {% for step in article.steps %}
                 <li>{{ step }}</li>
                 {% endfor %}
             </ul>
@@ -53,7 +53,7 @@
         <section class="article-section">
             <h2 class="section-title">Уход</h2>
             <ul class="care-list">
-                {% for item in tree.article.care %}
+                {% for item in article.care %}
                 <li>{{ item }}</li>
                 {% endfor %}
             </ul>
