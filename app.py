@@ -1,8 +1,9 @@
 import os
 import json
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from openai import OpenAI
+import requests as http_requests
 
 load_dotenv()
 
@@ -11,6 +12,9 @@ app = Flask(__name__)
 API_KEY = os.getenv('API_KEY')
 MODEL = os.getenv('MODEL', 'gpt-5.5')
 PROXY_API_URL = 'https://api.proxyapi.ru/openai/v1'
+
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 # Кэш для сгенерированных статей (чтобы не дёргать API на каждый заход)
 article_cache = {}
@@ -51,12 +55,55 @@ def generate_article(tree):
 
     content = response.choices[0].message.content.strip()
 
-    # Очистка от markdown-обёртки если модель её добавила
     if content.startswith('```'):
         lines = content.split('\n')
         content = '\n'.join(lines[1:-1]) if len(lines) > 2 else lines[1].removeprefix('json')
 
     return json.loads(content)
+
+
+def publish_to_telegram(tree, article):
+    """Отправляет статью в Telegram группу"""
+    if not TELEGRAM_BOT_TOKEN or 'your_bot_token' in TELEGRAM_BOT_TOKEN:
+        return {'ok': False, 'error': 'TELEGRAM_BOT_TOKEN не настроен'}
+
+    if not TELEGRAM_CHAT_ID or 'your_chat_id' in TELEGRAM_CHAT_ID:
+        return {'ok': False, 'error': 'TELEGRAM_CHAT_ID не настроен'}
+
+    escapes = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;'}
+
+    def h(text):
+        return ''.join(escapes.get(c, c) for c in text)
+
+    msg = f'''<b>{tree['emoji']} {h(tree['name'])}</b>
+
+{h(article['intro'])}
+
+{h(article['details'])}
+
+<b>🌱 Шаги посадки:</b>
+{chr(10).join(f'{i+1}. {h(s)}' for i, s in enumerate(article['steps']))}
+
+<b>🛠️ Уход:</b>
+{chr(10).join(f'— {h(c)}' for c in article['care'])}'''
+
+    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+    payload = {
+        'chat_id': TELEGRAM_CHAT_ID,
+        'text': msg,
+        'parse_mode': 'HTML',
+        'disable_web_page_preview': True
+    }
+
+    try:
+        resp = http_requests.post(url, data=payload, timeout=15)
+        data = resp.json()
+        if data.get('ok'):
+            return {'ok': True}
+        else:
+            return {'ok': False, 'error': data.get('description', 'Неизвестная ошибка Telegram')}
+    except Exception as e:
+        return {'ok': False, 'error': str(e)}
 
 
 @app.route('/')
@@ -79,6 +126,24 @@ def article(tree_id):
             return f'Ошибка генерации статьи: {e}', 500
 
     return render_template('article.html', tree=tree, article=article_cache[tree_id])
+
+
+@app.route('/publish/<tree_id>', methods=['POST'])
+def publish(tree_id):
+    """Публикует статью в Telegram"""
+    tree = next((t for t in trees if t['id'] == tree_id), None)
+    if tree is None:
+        return jsonify({'ok': False, 'error': 'Дерево не найдено'}), 404
+
+    if tree_id not in article_cache:
+        try:
+            article_cache[tree_id] = generate_article(tree)
+        except Exception as e:
+            return jsonify({'ok': False, 'error': f'Ошибка генерации: {e}'}), 500
+
+    result = publish_to_telegram(tree, article_cache[tree_id])
+    status = 200 if result['ok'] else 400
+    return jsonify(result), status
 
 
 if __name__ == '__main__':

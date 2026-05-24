@@ -60,10 +60,12 @@
         </section>
     </main>
 
-    <!-- Кнопка сохранения в PDF -->
-    <div class="pdf-btn-wrapper">
-        <button class="pdf-btn" onclick="saveToPDF()">📄 Сохранить в PDF</button>
+    <!-- Кнопки действий -->
+    <div class="action-buttons">
+        <button class="btn btn--pdf" onclick="saveToPDF()">📄 Сохранить в PDF</button>
+        <button class="btn btn--telegram" onclick="publishToTelegram()" id="tgBtn">📢 Опубликовать в Telegram</button>
     </div>
+    <div id="tgStatus" class="tg-status"></div>
 
     <!-- Подвал -->
     <footer class="footer">
@@ -71,22 +73,45 @@
     </footer>
 
     <script>
-        // Функция сохранения статьи в PDF
         function saveToPDF() {
             const element = document.getElementById('article-content');
             const treeName = '{{ tree.name }}'.replace(/[^\w\sА-Яа-яЁё]/g, '_');
-            
-            // Настройки для PDF
             const opt = {
-                margin: 10, // поля по 1 см (10мм)
+                margin: 10,
                 filename: treeName + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            
-            // Генерируем и скачиваем PDF
             html2pdf().set(opt).from(element).save();
+        }
+
+        function publishToTelegram() {
+            const btn = document.getElementById('tgBtn');
+            const status = document.getElementById('tgStatus');
+            btn.disabled = true;
+            btn.textContent = '⏳ Публикуем...';
+            status.className = 'tg-status';
+
+            fetch('/publish/{{ tree.id }}', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        status.className = 'tg-status tg-status--ok';
+                        status.textContent = '✅ Статья опубликована в Telegram!';
+                    } else {
+                        status.className = 'tg-status tg-status--err';
+                        status.textContent = '❌ ' + data.error;
+                    }
+                })
+                .catch(err => {
+                    status.className = 'tg-status tg-status--err';
+                    status.textContent = '❌ Ошибка соединения';
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '📢 Опубликовать в Telegram';
+                });
         }
     </script>
 </body>

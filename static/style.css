@@ -213,15 +213,18 @@ body {
     border: 1px dashed rgba(201, 168, 124, 0.2);
 }
 
-/* ===== Кнопка PDF ===== */
-.pdf-btn-wrapper {
+/* ===== Кнопки действий (PDF + Telegram) ===== */
+.action-buttons {
     text-align: center;
     padding: 30px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
 }
 
-.pdf-btn {
+.btn {
     padding: 14px 32px;
-    background: linear-gradient(135deg, var(--accent-sage), var(--accent-ochre));
     color: var(--bg-dark);
     border: none;
     border-radius: 16px;
@@ -231,9 +234,39 @@ body {
     transition: opacity 0.3s, transform 0.2s;
 }
 
-.pdf-btn:hover {
+.btn:hover {
     opacity: 0.9;
     transform: scale(1.05);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn--pdf {
+    background: linear-gradient(135deg, var(--accent-sage), var(--accent-ochre));
+}
+
+.btn--telegram {
+    background: linear-gradient(135deg, #2AABEE, #0088CC);
+    color: #fff;
+}
+
+.tg-status {
+    text-align: center;
+    font-size: 0.95rem;
+    min-height: 1.5em;
+    margin: -10px 0 20px;
+}
+
+.tg-status--ok {
+    color: var(--accent-sage);
+}
+
+.tg-status--err {
+    color: var(--accent-terra);
 }
 
 /* ===== Подвал ===== */
